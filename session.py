@@ -5,16 +5,12 @@ class Emotion:
 	contempt
 	disgust
 	fear
-	joy
+	happiness
+	neutral
 	sadness
 	surprise
 
-	# dimentional
-	# 0 - 100
-	engagement
-	# -100 - 100
-	valence
-	def __init(self = 0, engagement = 0, valence = 0, anger = 0, contempt = 0, disgust = 0, fear = 0, joy = 0, sadness = 0, surprise = 0):
+	def __init(self):
 		# blablalba
 
 

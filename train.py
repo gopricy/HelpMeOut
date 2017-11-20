@@ -37,7 +37,7 @@ with open('scalerX.pkl', 'wb') as f:
 with open('scalerY.pkl', 'wb') as f:
 	scaler_string = pickle.dump(Y_scaler, f)
 
-# Scale both the train inputs and outputs
+# Scale both the test inputs and outputs
 X_scaled_test = X_scaler.transform(X_test)
 Y_scaled_test = Y_scaler.transform(Y_test)
 
@@ -96,6 +96,7 @@ with tf.variable_scope('train'):
 # To log things for tensorboard
 with tf.variable_scope('logging'):
 	tf.summary.scalar('current_cost', cost)
+	tf.summary.histogram('predicted_value', prediction)
 	summary = tf.summary.merge_all()
 
 saver = tf.train.Saver()

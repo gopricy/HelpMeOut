@@ -1,27 +1,28 @@
 import os
 import tensorflow as tf
 import pandas as pd
-import pickle
 from sklearn.preprocessing import MinMaxScaler
 
 # Turn off TensorFlow warning messages
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-drop_keys = []
-Y_keys = ['total_earnings', 'critic_rating']
-
 # Load train data set from csv file
 train_data_df = pd.read_csv('sales_data_train.csv', dtype=float)
 
+Y_keys = ['total_earnings', 'critic_rating']
+
 # Pull out columns for X (data to train with) and Y (value to predict)
-X_train = train_data_df.drop(Y_keys+drop_keys, axis=1).values
+X_train = train_data_df.drop(Y_keys, axis=1).values
 Y_train = train_data_df[Y_keys].values
+
 
 # Load test data set from csv file
 test_data_df = pd.read_csv('sales_data_test.csv', dtype=float)
 
-X_test = test_data_df.drop(Y_keys+drop_keys, axis=1).values
+# Pull out columns for X (data to train with) and Y (value to predict)
+X_test = test_data_df.drop(Y_keys, axis=1).values
 Y_test = test_data_df[Y_keys].values
+
 
 
 # All data needs to be scaled to a small range like 0 to 1 for the neural network to work well. Create scalers for the inputs and outputs.
@@ -32,11 +33,6 @@ Y_scaler = MinMaxScaler(feature_range=(0, 1))
 X_scaled_train = X_scaler.fit_transform(X_train)
 Y_scaled_train = Y_scaler.fit_transform(Y_train)
 
-with open('scalerX.pkl', 'wb') as f:
-	scaler_string = pickle.dump(X_scaler, f)
-with open('scalerY.pkl', 'wb') as f:
-	scaler_string = pickle.dump(Y_scaler, f)
-
 # Scale both the train inputs and outputs
 X_scaled_test = X_scaler.transform(X_test)
 Y_scaled_test = Y_scaler.transform(Y_test)
@@ -44,18 +40,20 @@ Y_scaled_test = Y_scaler.transform(Y_test)
 print(X_scaled_test.shape)
 print(Y_scaled_test.shape)
 
+print('Note: Y values were scaled by multiplying by {:.10f} and adding {:.4f}'.format(Y_scaler.scale_[0], Y_scaler.min_[0]))
+
 
 # Define modle parameters
-learning_rate = 1e-3
+learning_rate = 0.001
 training_epochs = 100
 display_step = 5
 
 # Define how many inputs and outputs are in our neural network
-number_of_inputs = len(train_data_df.keys()) - len(drop_keys) - len(Y_keys)
-number_of_outputs = len(Y_keys)
+number_of_inputs = 8
+number_of_outputs = 2
 
 # Define how many neurons we want in each layer of our neural network
-layer_nodes = [50,50,50,50,50]
+layer_nodes = [20,20,20,20,20]
 
 RUN_NAME = 'Run with {}'.format(learning_rate)
 for nodes in layer_nodes:
@@ -67,7 +65,7 @@ for nodes in layer_nodes:
 with tf.variable_scope('input'):
 	X = tf.placeholder(tf.float32, shape=(None, number_of_inputs))
 
-# Hidden layers
+# Layer i
 input_sizes = [number_of_inputs] + layer_nodes
 last_layer_output = X
 for i in range(len(input_sizes)):
@@ -130,4 +128,3 @@ with tf.Session() as session:
 
 	save_path = saver.save(session, 'logs/{}/trained_model.ckpt'.format(RUN_NAME))
 	print('Model saved: {}'.format(save_path))
-
