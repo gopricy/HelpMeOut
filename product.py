@@ -12,10 +12,10 @@ class MLnetwork:
 
 		# Define how many inputs and outputs are in our neural network
 		number_of_inputs = 8
-		number_of_outputs = 2
+		number_of_outputs = 16
 
 		# Define how many neurons we want in each layer of our neural network
-		layer_nodes = [50,50,50,50,50]
+		layer_nodes = [150,150,150]
 
 		# Define the layers of the neural network itself
 
@@ -68,6 +68,7 @@ class MLnetwork:
 # Turn off TensorFlow warning messages
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-ml = MLnetwork('logs/Run with 0.001_50_50_50_50_50/trained_model.ckpt')
+ml = MLnetwork('logs/Run 2 with 0.0005(_150_150_150)/trained_model2000.ckpt')
 
-print ml.run([[1,1,1,0,1,0,1,59.99]])
+# print ml.run([[0.95,0.01,0.005,0.005,0.005,0.005,0.005,0.005]])
+print ml.run([[0.005,0.01,0.005,0.005,0.005,0.005,0.005,0.95]])

@@ -123,6 +123,13 @@ class Session:
 	def updateKnowladge(self):
 		knowladgeLevel = 0
 		# TODO: ...
+
+		diff = self.instructorInput[self.currentTurn].teachingLevel - self.studentStatus[self.currentTurn].knowladgeLevel
+		if diff <= 0:
+			knowladgeLevel = self.studentStatus[self.currentTurn].knowladgeLevel
+		else:
+			knowladgeLevel += diff * self.studentStatus[self.currentTurn].learningAbility
+
 		return knowladgeLevel
 
 	def updateAbility(self):
