@@ -1,2 +1,4 @@
 logs
+logs.bak
+.DS_Store
 *.pkl
