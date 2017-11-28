@@ -1,6 +1,5 @@
 import random
 import GUIInterface
-import tensorflow
 
 print "|--------------------------------------------|"
 print "|           Loading the Agent ...            |"
