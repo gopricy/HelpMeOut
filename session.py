@@ -200,10 +200,6 @@ class Session:
             else:
                 emotion.surprise = 0
 
-            emotion.happiness = emotion.happiness / (emotion.happiness + emotion.sadness + emotion.surprise)
-            emotion.sadness = emotion.sadness / (emotion.happiness + emotion.sadness + emotion.surprise)
-            emotion.surprise = emotion.surprise / (emotion.happiness + emotion.sadness + emotion.surprise)
-
             emotion.happiness *= self.studentCharacter.expressive
             emotion.sadness *= self.studentCharacter.expressive
             emotion.surprise *= self.studentCharacter.expressive
