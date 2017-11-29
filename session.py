@@ -1,6 +1,7 @@
 import math
 import random
 
+feedback_map = ["Punishment", "Nothing", "Praise"]
 # the student's status at time t
 class Emotion:
 	# 0 - 1 elemental
@@ -21,25 +22,25 @@ class StudentStatus:
 	# negative...neutral...positive continous or discrete
 	# emotion
 	# int number from a predefined set
-	# knowladgeLevel
-	# represents the maximum posible increasement of knowladge level
+	# knowledgeLevel
+	# represents the maximum posible increasement of knowledge level
 	# earningAbility
 
-	def __init__(self, grade = -1, emotion = Emotion(), knowladgeLevel = 0, learningAbility = 0):
+	def __init__(self, grade = -1, emotion = Emotion(), knowledgeLevel = 0, learningAbility = 0):
 		self.grade = grade
 		self.emotion = emotion
-		self.knowladgeLevel = knowladgeLevel
+		self.knowledgeLevel = knowledgeLevel
 		self.learningAbility = learningAbility
 
 # the instructor's input at time t
 class InstructorInput:
 	# encourage, reward, punish, criticize, etc.
-	behavior
-	# level of knowladge the instructor provide
+	feedback
+	# level of knowledge the instructor provide
 	teachingLevel
 
-	def __init__(self, behavior = 0, teachingLevel = 0):
-		self.behavior = behavior
+	def __init__(self, feedback = 0, teachingLevel = 0):
+		self.feedback = feedback
 		self.teachingLevel = teachingLevel
 
 # independent variable that affects the student's status transfer
@@ -89,27 +90,44 @@ class Session:
 		self.currentTurn = 0
 		self.studentCharacter = studentCharacter
 		self.statusMemory = statusMemory
+		self.instructorInput = []
+		self.studentStatus = []
 		self.randomFactor = 0
 
-	def next(self, behavior, teachingLevel):
-		instructorMove(behavior, teachingLevel)
+	def next(self, feedback, teachingLevel):
+		instructorMove(feedback, teachingLevel)
 		studentMove()
 		self.randomFactor = random.randint(0, 10)
 		if len(studentStatus) > 0:
 			return studentStatus[-1].emotion
 
 	def report(self):
-		# blablabla
-		pass
+		print '========================================================'
+		print 'The character of the student is:'
+		print 'extroversion: {}'.format(self.studentCharacter.extroversion)
+		print 'neuroticism: {}'.format(self.studentCharacter.neuroticism)
+		print 'openness: {}'.format(self.studentCharacter.openness)
+		print 'agreeableness: {}'.format(self.studentCharacter.agreeableness)
+		print 'conscientiousness: {}'.format(self.studentCharacter.conscientiousness)
+		print '========================================================\n'
 
-		######################################################################
-		#		functions under this should be regarded as private			 #
-		######################################################################
+		print '========================================================'
+		print 'The history of the teaching is:'
+		for i in range(self.currentRound):
+			print '--------------------------------------------------------'
+			t_status = self.studentStatus[i]
+			t_instruct = self.instructorInput[i]
+			print 'Round: {}'.format(i)
+			print 'Emotion: happiness: {}, sadness: {}, surprise: {}'.format(t_status.happiness, t_status.sadness, t_status.surprise)
+			print 'Knowledge level: {}, ability: {}'.format(t_status.knowledgeLevel, t_status.learningAbility)
+			print 'Grade: {}'.format(t_status.grade)
+			print 'Your feedback: {}, your choice of difficulty: {}'.format(feedback_map[t.feedback], t.difficulty)
+		print '========================================================\n'
 
-	def instructorMove(self, behavior, teachingLevel):
+	def instructorMove(self, feedback, teachingLevel):
 		if currentRound >= maximumRounds or currentTurn != 0:
 			return
-		instructorInput.append(InstructorInput(behavior, teachingLevel))
+		instructorInput.append(InstructorInput(feedback, teachingLevel))
 		currentTurn = 1
 
 	def studentMove(self):
@@ -123,17 +141,29 @@ class Session:
 		# take the privious status, instructor input and character as input and generate the new status
 		grade = updateGrade()
 		emotion = updateEmotion()
-		knowladgeLevel = updateKnowladge()
+		knowledgeLevel = updateKnowledge()
 		learningAbility = updateAbility()
 
-		return StudentStatus(grade, emotion, knowladgeLevel, learningAbility)
+		return StudentStatus(grade, emotion, knowledgeLevel, learningAbility)
 
 	def updateGrade(self):
 		grade = -1
 		if currentRound != 0:
-			pass
 			# TODO: add some logic that changes the grade
 			# will be based on hard coded simple logic
+			if self.instructorInput[-1].teachingLevel <= self.studentStatus[-1].knowledgeLevel:
+				grade = 100
+			else:
+				grade = 100 - (self.instructorInput[-1].teachingLevel - \
+				self.studentStatus[-1].knowledgeLevel)
+			if random.randint(0, 1):
+				grade -= self.randomFactor
+			else:
+				grade += self.randomFactor
+		if grade > 100:
+			grade = 100
+		if grade < 0:
+			grade = 0
 		return grade
 
 	def updateEmotion(self):
@@ -142,17 +172,15 @@ class Session:
 		# will be based on EMA
 		return emotion
 
-	def updateKnowladge(self):
-		knowladgeLevel = 0
+	def updateKnowledge(self):
+		knowledgeLevel = 0
 		# TODO: ...
-
-		diff = self.instructorInput[self.currentTurn].teachingLevel - self.studentStatus[self.currentTurn].knowladgeLevel
+		diff = self.instructorInput[-1].teachingLevel - self.studentStatus[-1].knowledgeLevel
 		if diff <= 0:
-			knowladgeLevel = self.studentStatus[self.currentTurn].knowladgeLevel
+			knowledgeLevel = self.studentStatus[-1].knowledgeLevel
 		else:
-			knowladgeLevel += diff * self.studentStatus[self.currentTurn].learningAbility
-
-		return knowladgeLevel
+			knowledgeLevel += min(diff, self.studentStatus[-1].learningAbility)
+		return knowledgeLevel
 
 	def updateAbility(self):
 		learningAbility = 0
