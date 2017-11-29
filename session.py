@@ -89,15 +89,18 @@ class Session:
 		self.currentTurn = 0
 		self.studentCharacter = studentCharacter
 		self.statusMemory = statusMemory
+		self.randomFactor = 0
 
 	def next(self, behavior, teachingLevel):
 		instructorMove(behavior, teachingLevel)
 		studentMove()
+		self.randomFactor = random.randint(0, 10)
 		if len(studentStatus) > 0:
 			return studentStatus[-1].emotion
 
 	def report(self):
 		# blablabla
+		pass
 
 		######################################################################
 		#		functions under this should be regarded as private			 #
@@ -128,6 +131,7 @@ class Session:
 	def updateGrade(self):
 		grade = -1
 		if currentRound != 0:
+			pass
 			# TODO: add some logic that changes the grade
 			# will be based on hard coded simple logic
 		return grade
