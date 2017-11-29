@@ -1,28 +1,29 @@
+import math
+import random
+
 # the student's status at time t
 class Emotion:
-	# 0 - 100 elemental
-	anger
-	contempt
-	disgust
-	fear
-	happiness
-	neutral
-	sadness
-	surprise
-
+	# 0 - 1 elemental
 	def __init(self):
+		self.anger = 0
+		self.contempt = 0
+		self.disgust = 0
+		self.fear = 0
+		self.happiness = 0
+		self.sadness = 0
+		self.surprise = 0
 		# blablalba
 
 
 class StudentStatus:
 	# int number from 0 to 100, or -1 means not graded (first round)
-	grade
+	# grade
 	# negative...neutral...positive continous or discrete
-	emotion
+	# emotion
 	# int number from a predefined set
-	knowladgeLevel
+	# knowladgeLevel
 	# represents the maximum posible increasement of knowladge level
-	learningAbility
+	# earningAbility
 
 	def __init__(self, grade = -1, emotion = Emotion(), knowladgeLevel = 0, learningAbility = 0):
 		self.grade = grade
@@ -43,9 +44,29 @@ class InstructorInput:
 
 # independent variable that affects the student's status transfer
 class StudentCharacter:
-	# TODO: define this according to Zhirui's research results
-	def __init__(self):
-		# blablabla
+	# Big five 0-100
+	# extroversion
+	# neuroticism
+	# openness
+	# agreeableness
+	# conscientiousness
+
+	# result
+	grit # ln(51 + 0.07E - 0.14N + 0.07A + 0.25C)
+	expressive # ln(51 + 0.4E -0.2N)
+	learning # ln(51 + 0.1A + 0.14O + 0.26C)
+	def __init__(self, E=random.randint(0,100), N=random.randint(0,100), \
+		O=random.randint(0,100), A=random.randint(0,100), C=random.randint(0,100)):
+
+		self.extroversion = E
+		self.neuroticism = N
+		self.openness = O
+		self.agreeableness = A
+		self.conscientiousness = C
+
+		self.grit = math.log(51 + 0.07*E - 0.14*N + 0.07*A + 0.25*C)
+		self.expressive = math.log(51 + 0.4*E - 0.2*N)
+		self.learning = math.log(51 + 0.1*A + 0.14*O + 0.26*C)
 
 # records an entire teaching session
 class Session:
@@ -75,15 +96,12 @@ class Session:
 		if len(studentStatus) > 0:
 			return studentStatus[-1].emotion
 
-
-
-
+	def report(self):
+		# blablabla
 
 		######################################################################
 		#		functions under this should be regarded as private			 #
 		######################################################################
-
-
 
 	def instructorMove(self, behavior, teachingLevel):
 		if currentRound >= maximumRounds or currentTurn != 0:
