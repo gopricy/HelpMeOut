@@ -66,23 +66,26 @@ class StudentCharacter:
 		self.conscientiousness = C
 
 		self.grit = math.log(51 + 0.07*E - 0.14*N + 0.07*A + 0.25*C)
+		self.grit = (self.grit - math.log(51-14))/(math.log(51+7+7+25) - math.log(51-14))
 		self.expressive = math.log(51 + 0.4*E - 0.2*N)
+		self.expressive = (self.expressive - math.log(51-20))/(math.log(51+40) - math.log(51-20))
 		self.learning = math.log(51 + 0.1*A + 0.14*O + 0.26*C)
+		self.learning = (self.learning - math.log(51))/(math.log(51+10+14+26) - math.log(51))
 
 # records an entire teaching session
 class Session:
-	maximumRounds
-	currentRound
+	# maximumRounds
+	# currentRound
 	# student's turn or instructor's turn, 0 for instructor, 1 for student
-	currentTurn
+	# currentTurn
 	# the number of statuses
-	statusMemory
+	# statusMemory
 	# array of StudentStatus
-	studentStatus = []
+	# studentStatus = []
 	# array of InstructorInput
-	instructorInput = []
+	# instructorInput = []
 	# StudentCharacter
-	studentCharacter
+	# studentCharacter
 
 	def __init__(self, studentCharacter = StudentCharacter(), maximumRounds = 10, statusMemory = 0):
 		self.maximumRounds = maximumRounds
@@ -123,6 +126,10 @@ class Session:
 			print 'Grade: {}'.format(t_status.grade)
 			print 'Your feedback: {}, your choice of difficulty: {}'.format(feedback_map[t.feedback], t.difficulty)
 		print '========================================================\n'
+
+		######################################################################
+		#		functions under this should be regarded as private			 #
+		######################################################################
 
 	def instructorMove(self, feedback, teachingLevel):
 		if currentRound >= maximumRounds or currentTurn != 0:
@@ -168,8 +175,25 @@ class Session:
 
 	def updateEmotion(self):
 		emotion = Emotion()
-		# TODO: add logic here to generate the current emotion
-		# will be based on EMA
+		likelyhood = 1 - math.fabs(self.randomFactor) / 10.0
+		desirabilityA = (self.studentStatus[-1].grade - 50) / 50.0
+		desirabilityB = self.instructorInput[-1].feedback - 1
+		desirability = desirabilityA * 0.5 + desirabilityB * 0.5
+		# based on EMA
+		if desirability >= 0:
+			emotion.happiness = desirability
+		else:
+			emotion.sadness = -desirability
+		emotion.surprise = likelyhood < 0.2 ? 1 - likelyhood / 0.2 : 0
+		
+		emotion.happiness = emotion.happiness / (emotion.happiness + emotion.sadness * emotion.surprise)
+		emotion.sadness = emotion.sadness / (emotion.happiness + emotion.sadness * emotion.surprise)
+		emotion.surprise = emotion.surprise / (emotion.happiness + emotion.sadness * emotion.surprise)
+
+		emotion.happiness *= self.studentCharacter.expressive
+		emotion.sadness *= self.studentCharacter.expressive
+		emotion.surprise *= self.studentCharacter.expressive
+
 		return emotion
 
 	def updateKnowledge(self):
@@ -179,10 +203,22 @@ class Session:
 		if diff <= 0:
 			knowledgeLevel = self.studentStatus[-1].knowledgeLevel
 		else:
+
 			knowledgeLevel += min(diff, self.studentStatus[-1].learningAbility)
 		return knowledgeLevel
 
 	def updateAbility(self):
-		learningAbility = 0
-		# TODO: ...
+		learningAbility = math.floor(self.studentCharacter.learning * 5 + 0.5)
+		G = self.studentCharacter.grit
+		lAscalefact = 0
+		if(self.studentStatus[-1].emotion.happiness > 0):
+			x = self.studentStatus[-1].emotion.happiness
+			bar = 0.5 + 0.5 * G
+			lAscalefact = x <= bar ? x/bar * G : x/(bar-1) + G - bar/(bar-1)
+		else:
+			x = self.studentStatus[-1].emotion.sadness
+			bar = 0.5 * G
+			lAscalefact = x <= bar ? x/(2*bar) * G : x*(1-G/2)/(bar-1) + G - 1 + (G/2 -1)/(bar-1)
+
+		learningAbility *= (1+lAscalefact)
 		return learningAbility
