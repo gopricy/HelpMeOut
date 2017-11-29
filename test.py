@@ -1,5 +1,5 @@
 import random
-
+import subprocess as sp
 print "|--------------------------------------------|"
 print "|       Starting Facial Movement Demo        |"
 print "|--------------------------------------------|"
@@ -77,62 +77,54 @@ rachel.setStringAttribute('deformableMesh', 'ChrRachel.dae')
 rachel.setStringAttribute("displayType", "GPUmesh")
 
 
-# # Update to repeat reaches
-# last = 0
-# canTime = True
-# delay = 2
-# class test(SBScript):
-# 	def update(self, time):
-# 		global canTime, last
-# 		if canTime:
-# 			last = time
-# 			canTime = False
-# 		diff = time - last
-# 		if diff >= delay:
-# 			diff = 0
-# 			canTime = True
-# 		# If time's up, do action
-# 		if canTime:
-# 			nextFace()
+# Update to repeat reaches
+last = 0
+canTime = True
+delay = 0.7
+p = sp.Popen('cd /Users/congxin/Documents/HelpMeOut && python -u product.py', \
+	stdin = sp.PIPE, stdout = sp.PIPE, shell = True)
 
-# # List of expressions
-# expressionList = ['sad', 'shock', 'angry', 'happy', 'fear']
-# chrName = 'ChrRachel'
-# curFace = 0
-# faceAmt = len(expressionList)
-# # List of expressions, choice list, get and call function		
-# def nextFace():
-# 	global curFace
-# 	expression = expressionList[curFace]
-# 	if expression == 'sad': 
-# 		print 'Playing sad'
-# 		bml.execBML(chrName, '<face type="facs" au="1_left" amount="1"/><face type="facs" au="1_right" amount="1"/> + \
-# 							  <face type="facs" au="4_left" amount="1"/><face type="facs" au="4_right" amount="1"/> + \
-# 							  <face type="facs" au="6" amount="0.58"/>')
-# 	if expression == 'happy':
-# 		print 'Playing happy'
-# 		bml.execBML(chrName, '<face type="facs" au="6" amount="1"/><face type="facs" au="12" amount="1"/>')
-# 	if expression == 'angry':
-# 		print 'Playing angry'
-# 		bml.execBML(chrName, '<face type="facs" au="2_left" amount="1"/><face type="facs" au="2_right" amount="1"/> + \
-# 							  <face type="facs" au="4_left" amount="1"/><face type="facs" au="4_right" amount="1"/> + \
-# 							  <face type="facs" au="5" amount="0.68"/><face type="facs" au="7" amount="0.5"/> + \
-# 							  <face type="facs" au="10" amount="1"/><face type="facs" au="26" amount="0.22"/>')
-# 	if expression == 'shock':
-# 		print 'Playing shock'
-# 		bml.execBML(chrName, '<face type="facs" au="1_left" amount="1"/><face type="facs" au="1_right" amount="1"/> + \
-# 							  <face type="facs" au="5" amount="0.86"/><face type="facs" au="26" amount="0.73"/>')
-# 	if expression == 'fear':
-# 		print 'Playing fear'
-# 		bml.execBML(chrName, '<face type="facs" au="1_left" amount="0.6"/><face type="facs" au="1_right" amount="0.6"/> + \
-# 							  <face type="facs" au="5" amount="0.7"/><face type="facs" au="26" amount="0.25"/> + \
-# 							  <face type="facs" au="38" amount="1"/>')
-# 	# Increment index, reset when hit max
-# 	curFace = curFace + 1
-# 	if curFace >= faceAmt:
-# 		curFace = 0
+class test(SBScript):
+	def update(self, time):
+		global canTime, last
+		if canTime:
+			last = time
+			canTime = False
+		diff = time - last
+		if diff >= delay:
+			diff = 0
+			canTime = True
+		# If time's up, do action
+		if canTime:
+			nextFace()
 
-# # Run the update script
-# scene.removeScript('test')
-# test = test()
-# scene.addScript('test', test)
+chrName = 'ChrRachel'
+
+emotions = ['0. 0. 0. 0. 0. 0. 0.3', '0. 0. 0. 0. 0. 0. 0.6', '0. 0. 0. 0. 0. 0. 0.9']
+feed_dict = ['Punishment', 'Nothing', 'Praise']
+# List of expressions, choice list, get and call function
+def nextFace():
+	feedback = raw_input('what would you do to the student? Punishment(0), Nothing(1), Praise(2)')
+	print("your choice is: " + feed_dict[int(feedback)])
+	dif = raw_input('input the difficulty:')
+	print("your choice is: " + dif)
+	print >>p.stdin, emotions[int(dif)]
+	aus = p.stdout.readline()
+	aus = aus.split()
+	aus = [float(i) for i in aus]
+	# bml.execBML(chrName, '<face type="facs" au="1_left" amount="1"/><face type="facs" au="1_right" amount="1"/> + \
+	# 						<face type="facs" au="4_left" amount="1"/><face type="facs" au="4_right" amount="1"/> + \
+	# 						<face type="facs" au="6" amount="0.58"/>')
+	bml.execBML(chrName, '<face type="facs" au="1_left" amount="{}"/><face type="facs" au="1_right" amount="{}"/>\
+		<face type="facs" au="2_left" amount="{}"/><face type="facs" au="2_right" amount="{}"/>\
+		<face type="facs" au="4_left" amount="{}"/><face type="facs" au="4_right" amount="{}"/>\
+		<face type="facs" au="5" amount="{}"/><face type="facs" au="6" amount="{}"/>\
+		<face type="facs" au="7" amount="{}"/><face type="facs" au="10" amount="{}"/>\
+		<face type="facs" au="12_left" amount="{}"/><face type="facs" au="12_right" amount="{}"/>\
+		<face type="facs" au="25" amount="{}"/><face type="facs" au="26" amount="{}"/>\
+		<face type="facs" au="45_left" amount="{}"/><face type="facs" au="45_right" amount="{}"/>'.format(*aus))
+
+# Run the update script
+scene.removeScript('test')
+test = test()
+scene.addScript('test', test)
